@@ -1,0 +1,155 @@
+datasource db {
+  provider = "postgresql"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// 1. Admin
+model Admin {
+  id        String     @id @default(uuid())
+  email     String     @unique
+  password  String
+  name      String
+  role      String     @default("ADMIN") // ADMIN, OPERATOR, VIEWER
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  auditLogs AuditLog[]
+}
+
+// 2. Router
+model Router {
+  id              String         @id @default(uuid())
+  name            String
+  host            String
+  port            Int            @default(8728)
+  username        String
+  password        String
+  description     String?
+  status          String         @default("DISCONNECTED") // CONNECTED, DISCONNECTED, ERROR
+  isSimulation    Boolean        @default(false)
+  // Hardware sync fields
+  cpuUsage        Int?
+  memoryUsage     Int?
+  routerosVersion String?
+  uptime          String?
+  lastSync        DateTime?
+  architecture    String?
+  boardName       String?
+  totalMemory     String?
+  freeMemory      String?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  slices          NetworkSlice[]
+  auditLogs       AuditLog[]
+}
+
+// 3. Tenant
+model Tenant {
+  id          String         @id @default(uuid())
+  name        String         @unique
+  description String?
+  status      String         @default("ACTIVE") // ACTIVE, INACTIVE
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  slices      NetworkSlice[]
+  schedulers  Scheduler[]
+}
+
+// 4. Network Slice
+model NetworkSlice {
+  id              String   @id @default(uuid())
+  name            String
+  vlanId          Int?
+  ipRange         String?
+  bandwidthTx     String   // Upload limit, e.g. "10M"
+  bandwidthRx     String   // Download limit, e.g. "10M"
+  isolated        Boolean  @default(true)
+  status          String   @default("ACTIVE") // ACTIVE, INACTIVE, ERROR
+  vrfName         String?
+  subnet          String?
+  gateway         String?
+  firewallProfile String?
+  routerId        String
+  router          Router   @relation(fields: [routerId], references: [id], onDelete: Cascade)
+  tenantId        String?
+  tenant          Tenant?  @relation(fields: [tenantId], references: [id], onDelete: SetNull)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+// 5. Scheduler
+model Scheduler {
+  id         String   @id @default(uuid())
+  name       String
+  expression String   // Cron expression, e.g. "0 0 * * *"
+  action     String   // e.g. "DISABLE_SLICE", "ENABLE_SLICE"
+  payload    String?  // JSON string containing arguments
+  status     String   @default("ACTIVE") // ACTIVE, PAUSED, COMPLETED
+  tenantId   String?
+  tenant     Tenant?  @relation(fields: [tenantId], references: [id], onDelete: SetNull)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+// 6. Configuration Template
+model ConfigurationTemplate {
+  id               String   @id @default(uuid())
+  name             String   @unique
+  description      String?
+  content          String   // Template script for RouterOS
+  variables        String?  // JSON string containing array of template variables
+  defaultVlanId    Int?
+  defaultVrfName   String?
+  defaultSubnet    String?
+  defaultGateway   String?
+  defaultBandwidth String?
+  firewallProfile  String?
+  qosProfile       String?
+  status           String   @default("ACTIVE") // ACTIVE, INACTIVE
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+// 7. LLM Provider
+model LLMProvider {
+  id        String       @id @default(uuid())
+  name      String       @unique
+  provider  String       // GEMINI, OPENAI, OLLAMA, MOCK
+  apiKey    String?
+  modelName String       // e.g. "gemini-1.5-pro"
+  apiUrl    String?      // Custom base URL for Ollama
+  isActive  Boolean      @default(false)
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+  histories LLMHistory[]
+}
+
+// 8. LLM History
+model LLMHistory {
+  id             String      @id @default(uuid())
+  prompt         String
+  rawResponse    String?
+  parsedResponse String?     // Parsed JSON commands
+  status         String      @default("SUCCESS") // SUCCESS, FAILED
+  providerId     String
+  provider       LLMProvider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+}
+
+// 9. Audit Log
+model AuditLog {
+  id          String   @id @default(uuid())
+  userId      String?
+  admin       Admin?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+  userEmail   String?
+  action      String   // e.g. "CREATE_SLICE", "UPDATE_ROUTER"
+  description String
+  status      String   @default("SUCCESS") // SUCCESS, FAILED
+  routerId    String?
+  router      Router?  @relation(fields: [routerId], references: [id], onDelete: SetNull)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
