@@ -59,18 +59,24 @@ export class RouterService {
   async syncInfo(id: string) {
     const router = await routerRepository.findById(id);
     if (!router) throw new Error('Router tidak ditemukan.');
-    const [resource, identity] = await Promise.all([
-      routerOSService.getSystemResource({ host: router.host, port: router.port, username: router.username, password: router.password, isSimulation: router.isSimulation }),
-      routerOSService.getIdentity({ host: router.host, port: router.port, username: router.username, password: router.password, isSimulation: router.isSimulation }),
-    ]);
-    const memUsage = resource.totalMemory > 0 ? Math.round(((resource.totalMemory - resource.freeMemory) / resource.totalMemory) * 100) : 0;
-    await routerRepository.update(id, {
-      status: 'CONNECTED', cpuUsage: resource.cpuLoad, memoryUsage: memUsage,
-      routerosVersion: resource.version, uptime: resource.uptime, architecture: resource.architecture,
-      boardName: resource.boardName, totalMemory: formatBytes(resource.totalMemory), freeMemory: formatBytes(resource.freeMemory),
-      lastSync: new Date(), name: identity.name !== 'unknown' ? identity.name : router.name,
-    });
-    return { identity: identity.name, resource, memoryUsagePercent: memUsage };
+    try {
+      const [resource, identity] = await Promise.all([
+        routerOSService.getSystemResource({ host: router.host, port: router.port, username: router.username, password: router.password, isSimulation: router.isSimulation }),
+        routerOSService.getIdentity({ host: router.host, port: router.port, username: router.username, password: router.password, isSimulation: router.isSimulation }),
+      ]);
+      const memUsage = resource.totalMemory > 0 ? Math.round(((resource.totalMemory - resource.freeMemory) / resource.totalMemory) * 100) : 0;
+      await routerRepository.update(id, {
+        status: 'CONNECTED', cpuUsage: resource.cpuLoad, memoryUsage: memUsage,
+        routerosVersion: resource.version, uptime: resource.uptime, architecture: resource.architecture,
+        boardName: resource.boardName, totalMemory: formatBytes(resource.totalMemory), freeMemory: formatBytes(resource.freeMemory),
+        lastSync: new Date(), name: identity.name !== 'unknown' ? identity.name : router.name,
+      });
+      return { identity: identity.name, resource, memoryUsagePercent: memUsage };
+    } catch (err: unknown) {
+      await routerRepository.update(id, { status: 'DISCONNECTED' });
+      const msg = err instanceof Error ? err.message : 'Koneksi gagal.';
+      throw new Error(msg);
+    }
   }
 }
 

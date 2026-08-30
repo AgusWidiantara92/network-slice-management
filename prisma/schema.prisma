@@ -43,6 +43,7 @@ model Router {
   updatedAt       DateTime       @updatedAt
   slices          NetworkSlice[]
   auditLogs       AuditLog[]
+  schedulers      Scheduler[]
 }
 
 // 3. Tenant
@@ -77,20 +78,36 @@ model NetworkSlice {
   tenant          Tenant?  @relation(fields: [tenantId], references: [id], onDelete: SetNull)
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
+  schedulers      Scheduler[]
 }
 
 // 5. Scheduler
 model Scheduler {
-  id         String   @id @default(uuid())
-  name       String
-  expression String   // Cron expression, e.g. "0 0 * * *"
-  action     String   // e.g. "DISABLE_SLICE", "ENABLE_SLICE"
-  payload    String?  // JSON string containing arguments
-  status     String   @default("ACTIVE") // ACTIVE, PAUSED, COMPLETED
-  tenantId   String?
-  tenant     Tenant?  @relation(fields: [tenantId], references: [id], onDelete: SetNull)
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  id            String        @id @default(uuid())
+  name          String
+  description   String?
+  expression    String?       // Cron expression, e.g. "0 0 * * *" (optional for One Time)
+  action        String        // e.g. "DEPLOY_CONFIG", "UPDATE_CONFIG", "DELETE_CONFIG", "ROLLBACK_CONFIG"
+  payload       String?       // JSON string containing arguments
+  status        String        @default("DRAFT") // DRAFT, SCHEDULED, RUNNING, COMPLETED, FAILED, CANCELLED
+  
+  tenantId      String?
+  tenant        Tenant?       @relation(fields: [tenantId], references: [id], onDelete: SetNull)
+  
+  routerId      String?
+  router        Router?       @relation(fields: [routerId], references: [id], onDelete: SetNull)
+  
+  sliceId       String?
+  slice         NetworkSlice? @relation(fields: [sliceId], references: [id], onDelete: SetNull)
+  
+  repeatType    String        // ONE_TIME, DAILY, WEEKLY, MONTHLY, CUSTOM
+  executionTime DateTime?     // For ONE_TIME schedulers
+  
+  lastRun       DateTime?
+  nextRun       DateTime?
+  
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
 }
 
 // 6. Configuration Template

@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useTheme } from 'next-themes';
-import { Sun, Moon, Laptop } from 'lucide-react';
+import { Sun, Moon } from 'lucide-react';
 
 export default function ThemeToggle() {
   const { theme, setTheme } = useTheme();
@@ -13,45 +13,37 @@ export default function ThemeToggle() {
   }, []);
 
   if (!mounted) {
-    return (
-      <div className="h-9 w-9 rounded-lg border border-border/40 bg-neutral-900/10" />
-    );
+    return <div className="h-8 w-20 rounded-lg bg-secondary animate-pulse" />;
   }
 
+  const isDark = theme === 'dark';
+
   return (
-    <div className="inline-flex rounded-lg border border-border/40 bg-neutral-900/30 p-0.5 backdrop-blur-xs">
+    <div className="inline-flex items-center rounded-lg border border-border bg-secondary p-0.5 select-none">
       <button
         onClick={() => setTheme('light')}
-        className={`rounded-md p-1.5 transition-all ${
-          theme === 'light'
-            ? 'bg-neutral-200 dark:bg-neutral-800 text-amber-500'
+        className={`flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded-md transition-all ${
+          !isDark
+            ? 'bg-card text-foreground shadow-xs'
             : 'text-muted-foreground hover:text-foreground'
         }`}
-        title="Light Mode"
+        title="Mode Siang"
       >
-        <Sun className="h-4 w-4" />
+        <Sun className="h-3.5 w-3.5 text-amber-500" />
+        <span>Siang</span>
       </button>
+
       <button
         onClick={() => setTheme('dark')}
-        className={`rounded-md p-1.5 transition-all ${
-          theme === 'dark'
-            ? 'bg-neutral-200 dark:bg-neutral-800 text-indigo-400'
+        className={`flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded-md transition-all ${
+          isDark
+            ? 'bg-card text-foreground shadow-xs'
             : 'text-muted-foreground hover:text-foreground'
         }`}
-        title="Dark Mode"
+        title="Mode Malam"
       >
-        <Moon className="h-4 w-4" />
-      </button>
-      <button
-        onClick={() => setTheme('system')}
-        className={`rounded-md p-1.5 transition-all ${
-          theme === 'system'
-            ? 'bg-neutral-200 dark:bg-neutral-800 text-sky-400'
-            : 'text-muted-foreground hover:text-foreground'
-        }`}
-        title="System Theme"
-      >
-        <Laptop className="h-4 w-4" />
+        <Moon className="h-3.5 w-3.5 text-indigo-400" />
+        <span>Malam</span>
       </button>
     </div>
   );

@@ -312,7 +312,7 @@ export default function TemplateClient() {
         </div>
         
         <div className="flex flex-wrap items-center gap-2">
-          <button onClick={handleImportClick} className="inline-flex items-center gap-2 rounded-lg border border-border/40 bg-neutral-900 px-4 py-2.5 text-sm font-bold text-muted-foreground hover:text-foreground hover:bg-neutral-800 transition-colors">
+          <button onClick={handleImportClick} className="inline-flex items-center gap-2 rounded-lg border border-border/40 bg-card px-4 py-2.5 text-sm font-bold text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors">
             <Upload className="h-4 w-4" /> Impor Template
           </button>
           <button onClick={openCreate} className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-bold text-primary-foreground shadow-sm hover:bg-primary/90 transition-colors">
@@ -361,7 +361,7 @@ export default function TemplateClient() {
           ) : (
             <div className="overflow-x-auto">
               <Table>
-                <TableHeader className="bg-neutral-900/40">
+                <TableHeader className="bg-transparent">
                   <TableRow className="border-b border-border/30 hover:bg-transparent">
                     <TableHead className="text-xs font-semibold text-muted-foreground cursor-pointer" onClick={() => toggleSort('name')}>
                       <span className="flex items-center gap-1">Nama Template <ArrowUpDown className="h-3 w-3" /></span>
@@ -377,7 +377,7 @@ export default function TemplateClient() {
                 </TableHeader>
                 <TableBody>
                   {templates.map((t) => (
-                    <TableRow key={t.id} className="border-b border-border/20 hover:bg-neutral-900/10">
+                    <TableRow key={t.id} className="border-b border-border/20 hover:bg-secondary/40">
                       <TableCell className="text-xs font-bold text-foreground">{t.name}</TableCell>
                       <TableCell className="text-xs text-muted-foreground max-w-[200px] truncate">{t.description || '-'}</TableCell>
                       <TableCell className="text-xs font-mono text-foreground">{t.defaultVlanId || '-'}</TableCell>
@@ -386,7 +386,7 @@ export default function TemplateClient() {
                       <TableCell className="text-xs font-mono text-foreground">{t.defaultBandwidth || '-'}</TableCell>
                       <TableCell>
                         <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[10px] font-semibold border ${
-                          t.status === 'ACTIVE' ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : 'bg-neutral-500/10 text-neutral-400 border-neutral-500/20'
+                          t.status === 'ACTIVE' ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : 'bg-secondary text-muted-foreground border border-border'
                         }`}>
                           {t.status === 'ACTIVE' ? 'Active' : 'Inactive'}
                         </span>
@@ -443,10 +443,10 @@ export default function TemplateClient() {
       {/* ---- Form Modal (Create/Edit) ---- */}
       {showForm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs overflow-y-auto p-4" onClick={() => setShowForm(false)}>
-          <div className="w-full max-w-lg rounded-xl border border-border/40 bg-neutral-900 p-6 shadow-xl my-8 animate-fade-in" onClick={(e) => e.stopPropagation()}>
+          <div className="w-full max-w-lg rounded-xl border border-border/40 bg-card p-6 shadow-xl my-8 animate-fade-in" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-5">
               <h3 className="text-lg font-bold text-foreground">{editingTemplate ? 'Edit Template' : 'Tambah Template Konfigurasi'}</h3>
-              <button onClick={() => setShowForm(false)} className="rounded-md p-1 hover:bg-neutral-800 text-muted-foreground"><X className="h-4 w-4" /></button>
+              <button onClick={() => setShowForm(false)} className="rounded-md p-1 hover:bg-secondary text-muted-foreground"><X className="h-4 w-4" /></button>
             </div>
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -526,7 +526,7 @@ export default function TemplateClient() {
               </div>
 
               <div className="flex justify-end gap-2 pt-2">
-                <button type="button" onClick={() => setShowForm(false)} className="rounded-lg border border-border/40 px-4 py-2 text-xs font-semibold text-muted-foreground hover:bg-neutral-800 transition-colors">Batal</button>
+                <button type="button" onClick={() => setShowForm(false)} className="rounded-lg border border-border/40 px-4 py-2 text-xs font-semibold text-muted-foreground hover:bg-secondary transition-colors">Batal</button>
                 <button type="submit" disabled={submitting} className="rounded-lg bg-primary px-4 py-2 text-xs font-bold text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors">
                   {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : editingTemplate ? 'Simpan' : 'Buat Template'}
                 </button>
@@ -539,14 +539,14 @@ export default function TemplateClient() {
       {/* ---- Apply Template Modal ---- */}
       {showApplyModal && applyingTemplate && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs" onClick={() => setShowApplyModal(false)}>
-          <div className="w-full max-w-md rounded-xl border border-border/40 bg-neutral-900 p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
+          <div className="w-full max-w-md rounded-xl border border-border/40 bg-card p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-5">
               <h3 className="text-lg font-bold text-foreground">Apply Template</h3>
-              <button onClick={() => setShowApplyModal(false)} className="rounded-md p-1 hover:bg-neutral-800 text-muted-foreground"><X className="h-4 w-4" /></button>
+              <button onClick={() => setShowApplyModal(false)} className="rounded-md p-1 hover:bg-secondary text-muted-foreground"><X className="h-4 w-4" /></button>
             </div>
 
             <div className="space-y-4">
-              <div className="rounded-lg border border-border/30 bg-neutral-900/40 p-3 text-xs space-y-1">
+              <div className="rounded-lg border border-border/30 bg-transparent p-3 text-xs space-y-1">
                 <p>Template: <strong className="text-foreground">{applyingTemplate.name}</strong></p>
                 <p className="text-muted-foreground">Default Subnet: {applyingTemplate.defaultSubnet}</p>
                 <p className="text-muted-foreground">Default VLAN: {applyingTemplate.defaultVlanId}</p>
@@ -574,7 +574,7 @@ export default function TemplateClient() {
               </div>
 
               <div className="flex justify-end gap-2 pt-2">
-                <button type="button" onClick={() => setShowApplyModal(false)} className="rounded-lg border border-border/40 px-4 py-2 text-xs font-semibold text-muted-foreground hover:bg-neutral-800 transition-colors">Batal</button>
+                <button type="button" onClick={() => setShowApplyModal(false)} className="rounded-lg border border-border/40 px-4 py-2 text-xs font-semibold text-muted-foreground hover:bg-secondary transition-colors">Batal</button>
                 <button onClick={handleApply} disabled={submitting} className="rounded-lg bg-primary px-4 py-2 text-xs font-bold text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors">
                   {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Terapkan Template'}
                 </button>
@@ -587,13 +587,13 @@ export default function TemplateClient() {
       {/* ---- Delete Dialog ---- */}
       {showDeleteDialog && deletingTemplate && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs" onClick={() => setShowDeleteDialog(false)}>
-          <div className="w-full max-w-sm rounded-xl border border-border/40 bg-neutral-900 p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
+          <div className="w-full max-w-sm rounded-xl border border-border/40 bg-card p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
             <h3 className="text-lg font-bold text-foreground mb-2">Hapus Template</h3>
             <p className="text-sm text-muted-foreground mb-5">
               Apakah Anda yakin ingin menghapus template <strong className="text-foreground">&quot;{deletingTemplate.name}&quot;</strong>?
             </p>
             <div className="flex justify-end gap-2">
-              <button onClick={() => setShowDeleteDialog(false)} className="rounded-lg border border-border/40 px-4 py-2 text-xs font-semibold text-muted-foreground hover:bg-neutral-800 transition-colors">Batal</button>
+              <button onClick={() => setShowDeleteDialog(false)} className="rounded-lg border border-border/40 px-4 py-2 text-xs font-semibold text-muted-foreground hover:bg-secondary transition-colors">Batal</button>
               <button onClick={onDelete} disabled={submitting} className="rounded-lg bg-rose-600 px-4 py-2 text-xs font-bold text-white hover:bg-rose-700 disabled:opacity-50 transition-colors">
                 {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Hapus'}
               </button>
@@ -605,20 +605,20 @@ export default function TemplateClient() {
       {/* ---- Detail & Preview Modal ---- */}
       {showDetail && detailTemplate && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs overflow-y-auto p-4" onClick={() => setShowDetail(false)}>
-          <div className="w-full max-w-lg rounded-xl border border-border/40 bg-neutral-900 p-6 shadow-xl my-8 animate-fade-in" onClick={(e) => e.stopPropagation()}>
+          <div className="w-full max-w-lg rounded-xl border border-border/40 bg-card p-6 shadow-xl my-8 animate-fade-in" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-5 border-b border-border/20 pb-3">
               <div>
                 <h3 className="text-lg font-bold text-foreground">Preview Template</h3>
                 <span className="text-xs text-muted-foreground">ID: {detailTemplate.id}</span>
               </div>
-              <button onClick={() => setShowDetail(false)} className="rounded-md p-1 hover:bg-neutral-800 text-muted-foreground"><X className="h-4 w-4" /></button>
+              <button onClick={() => setShowDetail(false)} className="rounded-md p-1 hover:bg-secondary text-muted-foreground"><X className="h-4 w-4" /></button>
             </div>
 
             <div className="space-y-5">
               {/* General Information */}
               <div className="space-y-2">
                 <h4 className="text-xs font-extrabold text-primary uppercase tracking-wider">General Information</h4>
-                <div className="grid gap-2 border border-border/20 bg-neutral-900/30 p-3 rounded-lg text-xs">
+                <div className="grid gap-2 border border-border/20 bg-transparent p-3 rounded-lg text-xs">
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Nama Template</span>
                     <span className="font-bold text-foreground">{detailTemplate.name}</span>
@@ -640,7 +640,7 @@ export default function TemplateClient() {
                   <Network className="h-4 w-4" />
                   <h4 className="text-xs font-extrabold uppercase tracking-wider">Network Configuration</h4>
                 </div>
-                <div className="grid gap-2 border border-border/20 bg-neutral-900/30 p-3 rounded-lg text-xs">
+                <div className="grid gap-2 border border-border/20 bg-transparent p-3 rounded-lg text-xs">
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Default VLAN ID</span>
                     <span className="font-mono text-foreground font-semibold">{detailTemplate.defaultVlanId || '-'}</span>
@@ -666,7 +666,7 @@ export default function TemplateClient() {
                   <Sliders className="h-4 w-4" />
                   <h4 className="text-xs font-extrabold uppercase tracking-wider">QoS Configuration</h4>
                 </div>
-                <div className="grid gap-2 border border-border/20 bg-neutral-900/30 p-3 rounded-lg text-xs">
+                <div className="grid gap-2 border border-border/20 bg-transparent p-3 rounded-lg text-xs">
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Default Bandwidth Limit</span>
                     <span className="font-mono text-foreground font-semibold">{detailTemplate.defaultBandwidth || '-'}</span>
@@ -684,7 +684,7 @@ export default function TemplateClient() {
                   <Shield className="h-4 w-4" />
                   <h4 className="text-xs font-extrabold uppercase tracking-wider">Firewall Configuration</h4>
                 </div>
-                <div className="grid gap-2 border border-border/20 bg-neutral-900/30 p-3 rounded-lg text-xs">
+                <div className="grid gap-2 border border-border/20 bg-transparent p-3 rounded-lg text-xs">
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Firewall Profile</span>
                     <span className="text-foreground capitalize">{detailTemplate.firewallProfile || 'standard'}</span>

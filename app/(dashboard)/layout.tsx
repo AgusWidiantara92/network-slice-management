@@ -34,16 +34,16 @@ export default async function DashboardLayout({
   return (
     <LayoutProvider>
       <div className="flex h-screen w-screen overflow-hidden bg-background text-foreground transition-colors duration-200">
-        {/* App Sidebar (Handles collapse and mobile drawer internally) */}
+        {/* Permanent Desktop Sidebar + Mobile Drawer */}
         <AppSidebar />
 
-        {/* Content Area */}
-        <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
-          {/* Sticky Header */}
+        {/* Right Main Body Area */}
+        <div className="flex flex-1 flex-col overflow-hidden">
+          {/* Top Command / Header Bar */}
           <AppHeader user={user} />
 
-          {/* Page Body Container */}
-          <main className="flex-1 overflow-y-auto bg-neutral-50/50 dark:bg-neutral-900/10">
+          {/* Page Container Area */}
+          <main className="flex-1 overflow-y-auto custom-scrollbar">
             <PageContainer>
               {children}
             </PageContainer>
