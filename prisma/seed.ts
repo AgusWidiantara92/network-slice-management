@@ -88,6 +88,30 @@ async function main() {
 
   console.log('✅ Configuration Template seeded:', defaultTemplate.name);
 
+  // ---- Seed MikroTik Router ----
+  const router = await prisma.router.upsert({
+    where: { id: 'mikrotik-main-router' },
+    update: {
+      host: '192.168.156.2',
+      port: 8728,
+      username: 'web-api',
+      password: 'PasswordKuat123!',
+    },
+    create: {
+      id: 'mikrotik-main-router',
+      name: 'MikroTik Main Router',
+      host: '192.168.156.2',
+      port: 8728,
+      username: 'web-api',
+      password: 'PasswordKuat123!',
+      description: 'Main Router MikroTik (API 8728)',
+      status: 'DISCONNECTED',
+      isSimulation: false,
+    },
+  });
+
+  console.log('✅ Router MikroTik seeded:', router.name, `(${router.host}:${router.port})`);
+
   console.log('🎉 Database seeding completed!');
 }
 

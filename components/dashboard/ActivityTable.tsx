@@ -1,16 +1,8 @@
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import type { RecentActivity } from '@/services/dashboard/dashboard.service';
 import { formatDate } from '@/utils/helpers';
-import { CheckCircle2, XCircle, Clock, Inbox } from 'lucide-react';
+import { CheckCircle2, XCircle, Inbox } from 'lucide-react';
 
 interface ActivityTableProps {
   activities: RecentActivity[];
@@ -18,80 +10,61 @@ interface ActivityTableProps {
 
 export default function ActivityTable({ activities }: ActivityTableProps) {
   return (
-    <Card className="col-span-1 overflow-hidden border border-border/40 bg-card/60 backdrop-blur-xs lg:col-span-3 shadow-xs">
-      <CardHeader className="pb-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <CardTitle className="text-lg font-bold tracking-tight text-foreground">
-              Aktivitas Terbaru
-            </CardTitle>
-            <CardDescription className="text-xs text-muted-foreground mt-0.5">
-              Log riwayat operasi network slicing terakhir di sistem
-            </CardDescription>
-          </div>
-          <Clock className="h-5 w-5 text-muted-foreground" />
+    <div className="col-span-1 lg:col-span-3 rounded-xl bg-card border border-border shadow-xs overflow-hidden">
+      <div className="px-5 pt-5 pb-3">
+        <h3 className="text-[15px] font-bold text-foreground">Aktivitas Terbaru</h3>
+        <p className="text-[11px] text-muted-foreground mt-0.5">Log riwayat operasi terakhir</p>
+      </div>
+
+      {activities.length > 0 ? (
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow className="border-b border-border hover:bg-transparent">
+                <TableHead className="text-[11px] font-medium text-muted-foreground py-2.5 pl-5">Waktu</TableHead>
+                <TableHead className="text-[11px] font-medium text-muted-foreground py-2.5">User</TableHead>
+                <TableHead className="text-[11px] font-medium text-muted-foreground py-2.5">Aktivitas</TableHead>
+                <TableHead className="text-[11px] font-medium text-muted-foreground py-2.5">Router</TableHead>
+                <TableHead className="text-[11px] font-medium text-muted-foreground text-center py-2.5 pr-5">Status</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {activities.map((activity) => {
+                const isSuccess = activity.status === 'SUCCESS';
+                return (
+                  <TableRow key={activity.id} className="border-b border-border/50 hover:bg-secondary/60 transition-colors">
+                    <TableCell className="text-[13px] text-muted-foreground whitespace-nowrap py-3 pl-5">
+                      {formatDate(new Date(activity.time))}
+                    </TableCell>
+                    <TableCell className="text-[13px] font-semibold text-foreground whitespace-nowrap py-3">
+                      {activity.user}
+                    </TableCell>
+                    <TableCell className="text-[13px] text-foreground max-w-[300px] truncate py-3">
+                      {activity.action}
+                    </TableCell>
+                    <TableCell className="text-[13px] text-muted-foreground whitespace-nowrap py-3">
+                      {activity.router}
+                    </TableCell>
+                    <TableCell className="text-center whitespace-nowrap py-3 pr-5">
+                      <span className={`inline-flex items-center gap-1 text-[11px] font-semibold ${
+                        isSuccess ? 'text-emerald-500' : 'text-rose-500'
+                      }`}>
+                        {isSuccess ? <CheckCircle2 className="h-3 w-3" /> : <XCircle className="h-3 w-3" />}
+                        {isSuccess ? 'Success' : 'Failed'}
+                      </span>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
         </div>
-      </CardHeader>
-
-      <CardContent className="p-0">
-        {activities.length > 0 ? (
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader className="bg-neutral-900/40">
-                <TableRow className="border-b border-border/30 hover:bg-transparent">
-                  <TableHead className="w-[180px] text-xs font-semibold text-muted-foreground">Waktu</TableHead>
-                  <TableHead className="w-[150px] text-xs font-semibold text-muted-foreground">User</TableHead>
-                  <TableHead className="text-xs font-semibold text-muted-foreground">Aktivitas</TableHead>
-                  <TableHead className="w-[150px] text-xs font-semibold text-muted-foreground">Router</TableHead>
-                  <TableHead className="w-[100px] text-center text-xs font-semibold text-muted-foreground">Status</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {activities.map((activity) => {
-                  const isSuccess = activity.status === 'SUCCESS';
-                  const activityTime = new Date(activity.time);
-
-                  return (
-                    <TableRow key={activity.id} className="border-b border-border/20 hover:bg-neutral-900/10">
-                      <TableCell className="text-xs font-medium text-muted-foreground whitespace-nowrap">
-                        {formatDate(activityTime)}
-                      </TableCell>
-                      <TableCell className="text-xs font-semibold text-foreground whitespace-nowrap">
-                        {activity.user}
-                      </TableCell>
-                      <TableCell className="text-xs text-foreground max-w-[300px] truncate">
-                        {activity.action}
-                      </TableCell>
-                      <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
-                        {activity.router}
-                      </TableCell>
-                      <TableCell className="text-center whitespace-nowrap">
-                        <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[10px] font-semibold ${
-                          isSuccess 
-                            ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20' 
-                            : 'bg-rose-500/10 text-rose-500 border border-rose-500/20'
-                        }`}>
-                          {isSuccess ? (
-                            <CheckCircle2 className="h-3 w-3" />
-                          ) : (
-                            <XCircle className="h-3 w-3" />
-                          )}
-                          <span>{isSuccess ? 'Success' : 'Failed'}</span>
-                        </span>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          </div>
-        ) : (
-          <div className="flex flex-col items-center justify-center gap-2 py-12 text-muted-foreground">
-            <Inbox className="h-8 w-8" />
-            <span className="text-sm">Belum ada aktivitas tercatat.</span>
-          </div>
-        )}
-      </CardContent>
-    </Card>
+      ) : (
+        <div className="flex flex-col items-center justify-center gap-2 py-12">
+          <Inbox className="h-8 w-8 text-muted-foreground" />
+          <span className="text-[13px] text-muted-foreground">Belum ada aktivitas tercatat.</span>
+        </div>
+      )}
+    </div>
   );
 }

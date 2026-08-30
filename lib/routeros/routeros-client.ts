@@ -107,10 +107,12 @@ export class RouterOSClient {
    */
   private async fetchRest(path: string): Promise<Record<string, string>> {
     const auth = Buffer.from(`${this.username}:${this.password}`).toString('base64');
-    const url = `http://${this.host}:${this.port}/rest${path}`;
+    // If port is set to legacy API port (8728), default REST API port is 80 (www service)
+    const restPort = this.port === 8728 ? 80 : this.port;
+    const url = `http://${this.host}:${restPort}/rest${path}`;
 
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 8000);
+    const timeout = setTimeout(() => controller.abort(), 5000);
 
     try {
       const response = await fetch(url, {
@@ -123,10 +125,15 @@ export class RouterOSClient {
       });
 
       if (!response.ok) {
-        throw new Error(`RouterOS API error: ${response.status}`);
+        throw new Error(`RouterOS REST API HTTP ${response.status} ${response.statusText}`);
       }
 
       return await response.json();
+    } catch (err: unknown) {
+      if (err instanceof Error && err.name === 'AbortError') {
+        throw new Error(`Koneksi ke MikroTik (${this.host}:${restPort}) waktu habis (Timeout). Pastikan service 'www' (port 80) atau IP MikroTik dapat diakses.`);
+      }
+      throw err;
     } finally {
       clearTimeout(timeout);
     }

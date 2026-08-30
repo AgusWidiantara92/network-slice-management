@@ -203,7 +203,7 @@ export default function TenantClient() {
           ) : (
             <div className="overflow-x-auto">
               <Table>
-                <TableHeader className="bg-neutral-900/40">
+                <TableHeader className="bg-transparent">
                   <TableRow className="border-b border-border/30 hover:bg-transparent">
                     <TableHead className="text-xs font-semibold text-muted-foreground cursor-pointer" onClick={() => toggleSort('name')}>
                       <span className="flex items-center gap-1">Nama Tenant <ArrowUpDown className="h-3 w-3" /></span>
@@ -219,12 +219,12 @@ export default function TenantClient() {
                 </TableHeader>
                 <TableBody>
                   {tenants.map((t) => (
-                    <TableRow key={t.id} className="border-b border-border/20 hover:bg-neutral-900/10">
+                    <TableRow key={t.id} className="border-b border-border/20 hover:bg-secondary/40">
                       <TableCell className="text-xs font-bold text-foreground">{t.name}</TableCell>
                       <TableCell className="text-xs text-muted-foreground max-w-[200px] truncate">{t.description || '-'}</TableCell>
                       <TableCell>
                         <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[10px] font-semibold border ${
-                          t.status === 'ACTIVE' ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : 'bg-neutral-500/10 text-neutral-400 border-neutral-500/20'
+                          t.status === 'ACTIVE' ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : 'bg-secondary text-muted-foreground border border-border'
                         }`}>
                           <span className={`h-1.5 w-1.5 rounded-full ${t.status === 'ACTIVE' ? 'bg-emerald-400' : 'bg-neutral-400'}`} />
                           {t.status === 'ACTIVE' ? 'Active' : 'Inactive'}
@@ -275,10 +275,10 @@ export default function TenantClient() {
       {/* ---- Form Modal (Create/Edit) ---- */}
       {showForm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs" onClick={() => setShowForm(false)}>
-          <div className="w-full max-w-md rounded-xl border border-border/40 bg-neutral-900 p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
+          <div className="w-full max-w-md rounded-xl border border-border/40 bg-card p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-5">
               <h3 className="text-lg font-bold text-foreground">{editingTenant ? 'Edit Tenant' : 'Tambah Tenant Baru'}</h3>
-              <button onClick={() => setShowForm(false)} className="rounded-md p-1 hover:bg-neutral-800 text-muted-foreground"><X className="h-4 w-4" /></button>
+              <button onClick={() => setShowForm(false)} className="rounded-md p-1 hover:bg-secondary text-muted-foreground"><X className="h-4 w-4" /></button>
             </div>
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
               <div className="space-y-1.5">
@@ -298,7 +298,7 @@ export default function TenantClient() {
                 </select>
               </div>
               <div className="flex justify-end gap-2 pt-2">
-                <button type="button" onClick={() => setShowForm(false)} className="rounded-lg border border-border/40 px-4 py-2 text-xs font-semibold text-muted-foreground hover:bg-neutral-800 transition-colors">Batal</button>
+                <button type="button" onClick={() => setShowForm(false)} className="rounded-lg border border-border/40 px-4 py-2 text-xs font-semibold text-muted-foreground hover:bg-secondary transition-colors">Batal</button>
                 <button type="submit" disabled={submitting} className="rounded-lg bg-primary px-4 py-2 text-xs font-bold text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors">
                   {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : editingTenant ? 'Simpan' : 'Buat Tenant'}
                 </button>
@@ -311,13 +311,13 @@ export default function TenantClient() {
       {/* ---- Delete Dialog ---- */}
       {showDeleteDialog && deletingTenant && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs" onClick={() => setShowDeleteDialog(false)}>
-          <div className="w-full max-w-sm rounded-xl border border-border/40 bg-neutral-900 p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
+          <div className="w-full max-w-sm rounded-xl border border-border/40 bg-card p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
             <h3 className="text-lg font-bold text-foreground mb-2">Hapus Tenant</h3>
             <p className="text-sm text-muted-foreground mb-5">
               Apakah Anda yakin ingin menghapus tenant <strong className="text-foreground">&quot;{deletingTenant.name}&quot;</strong>? Tindakan ini tidak dapat dibatalkan.
             </p>
             <div className="flex justify-end gap-2">
-              <button onClick={() => setShowDeleteDialog(false)} className="rounded-lg border border-border/40 px-4 py-2 text-xs font-semibold text-muted-foreground hover:bg-neutral-800 transition-colors">Batal</button>
+              <button onClick={() => setShowDeleteDialog(false)} className="rounded-lg border border-border/40 px-4 py-2 text-xs font-semibold text-muted-foreground hover:bg-secondary transition-colors">Batal</button>
               <button onClick={onDelete} disabled={submitting} className="rounded-lg bg-rose-600 px-4 py-2 text-xs font-bold text-white hover:bg-rose-700 disabled:opacity-50 transition-colors">
                 {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Hapus'}
               </button>
@@ -329,10 +329,10 @@ export default function TenantClient() {
       {/* ---- Detail Modal ---- */}
       {showDetailModal && detailTenant && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs" onClick={() => setShowDetailModal(false)}>
-          <div className="w-full max-w-md rounded-xl border border-border/40 bg-neutral-900 p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
+          <div className="w-full max-w-md rounded-xl border border-border/40 bg-card p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-5">
               <h3 className="text-lg font-bold text-foreground">Detail Tenant</h3>
-              <button onClick={() => setShowDetailModal(false)} className="rounded-md p-1 hover:bg-neutral-800 text-muted-foreground"><X className="h-4 w-4" /></button>
+              <button onClick={() => setShowDetailModal(false)} className="rounded-md p-1 hover:bg-secondary text-muted-foreground"><X className="h-4 w-4" /></button>
             </div>
             <div className="space-y-3">
               {[
