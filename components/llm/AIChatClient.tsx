@@ -1,10 +1,10 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card } from '@/components/ui/card';
 import {
   Sparkles, Send, Bot, User, Loader2, ShieldCheck,
-  Cpu, ArrowRight, Zap
+  Cpu, ArrowRight, Zap, Trash2, RefreshCw
 } from 'lucide-react';
 import { StructuredSliceCommand } from '@/services/llm.service';
 
@@ -15,6 +15,16 @@ interface ChatMessage {
   parsedCommand?: StructuredSliceCommand;
   providerName?: string;
   timestamp: string;
+}
+
+interface HistoryApiItem {
+  id: string;
+  prompt: string;
+  rawResponse: string | null;
+  parsedResponse: string | null;
+  status: string;
+  createdAt: string;
+  provider?: { name: string } | null;
 }
 
 const QUICK_PROMPTS = [
@@ -28,6 +38,7 @@ export default function AIChatClient() {
   const msgCounterRef = React.useRef(0);
   const [prompt, setPrompt] = useState('');
   const [loading, setLoading] = useState(false);
+  const [historyLoading, setHistoryLoading] = useState(true);
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: 'welcome',
@@ -38,6 +49,90 @@ export default function AIChatClient() {
   ]);
   const [toast, setToast] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [deployingId, setDeployingId] = useState<string | null>(null);
+
+  // Load chat history from database on mount
+  const fetchHistory = useCallback(async () => {
+    setHistoryLoading(true);
+    try {
+      const res = await fetch('/api/llm/history');
+      const json = await res.json();
+      if (json.success && Array.isArray(json.data) && json.data.length > 0) {
+        const welcomeMsg: ChatMessage = {
+          id: 'welcome',
+          sender: 'ai',
+          text: 'Halo Admin! Saya adalah AI Assistant Network Slice Management. Masukkan instruksi dalam bahasa alami untuk membuat, mengubah, atau mengisolasi jaringan multi-tenant pada MikroTik RouterOS.',
+          timestamp: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
+        };
+
+        const loadedMsgs: ChatMessage[] = [welcomeMsg];
+        const reversedItems: HistoryApiItem[] = [...json.data].reverse();
+
+        reversedItems.forEach((item, idx) => {
+          let parsedCmd: StructuredSliceCommand | undefined;
+          let aiText = item.rawResponse || 'Instruksi berhasil diproses.';
+
+          if (item.parsedResponse) {
+            try {
+              parsedCmd = JSON.parse(item.parsedResponse);
+              if (parsedCmd && parsedCmd.explanation) {
+                aiText = parsedCmd.explanation;
+              }
+            } catch {
+              /* ignore parse error */
+            }
+          }
+
+          const timeStr = new Date(item.createdAt).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+
+          loadedMsgs.push({
+            id: `hist-user-${item.id || idx}`,
+            sender: 'user',
+            text: item.prompt,
+            timestamp: timeStr,
+          });
+
+          loadedMsgs.push({
+            id: `hist-ai-${item.id || idx}`,
+            sender: 'ai',
+            text: aiText,
+            parsedCommand: parsedCmd,
+            providerName: item.provider?.name || 'AI Engine',
+            timestamp: timeStr,
+          });
+        });
+
+        setMessages(loadedMsgs);
+      }
+    } catch {
+      /* ignore fetch error */
+    } finally {
+      setHistoryLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    queueMicrotask(() => fetchHistory());
+  }, [fetchHistory]);
+
+  const handleClearHistory = async () => {
+    try {
+      const res = await fetch('/api/llm/history', { method: 'DELETE' });
+      const json = await res.json();
+      if (json.success) {
+        setMessages([
+          {
+            id: 'welcome',
+            sender: 'ai',
+            text: 'Riwayat chat telah dibersihkan. Halo Admin! Ada yang bisa saya bantu terkait pengelolaan Network Slice?',
+            timestamp: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
+          },
+        ]);
+        setToast({ type: 'success', message: 'Riwayat chat berhasil dibersihkan.' });
+      }
+    } catch {
+      setToast({ type: 'error', message: 'Gagal membersihkan riwayat chat.' });
+    }
+  };
 
   const handleSendPrompt = async (textToSend?: string) => {
     const inputPrompt = (textToSend || prompt).trim();
@@ -205,13 +300,34 @@ export default function AIChatClient() {
       )}
 
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-extrabold tracking-tight text-foreground flex items-center gap-3">
-          <Sparkles className="h-7 w-7 text-primary animate-pulse" /> AI Chat Module
-        </h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          Konfigurasi otomatis Network Slice Management menggunakan bahasa alami (Natural Language Instruction Orchestration)
-        </p>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="text-2xl font-extrabold tracking-tight text-foreground flex items-center gap-3">
+            <Sparkles className="h-7 w-7 text-primary animate-pulse" /> AI Chat Module
+          </h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            Konfigurasi otomatis Network Slice Management menggunakan bahasa alami (Natural Language Instruction Orchestration)
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={fetchHistory}
+            disabled={historyLoading}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-border/40 bg-card px-3 py-2 text-xs font-semibold text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors disabled:opacity-50"
+            title="Muat Ulang Riwayat"
+          >
+            <RefreshCw className={`h-3.5 w-3.5 ${historyLoading ? 'animate-spin' : ''}`} />
+            <span>Refres Riwayat</span>
+          </button>
+          <button
+            onClick={handleClearHistory}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-xs font-semibold text-rose-400 hover:bg-rose-500/20 transition-colors"
+            title="Hapus Riwayat Chat"
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+            <span>Hapus Riwayat</span>
+          </button>
+        </div>
       </div>
 
       {/* Quick Prompts */}
