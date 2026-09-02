@@ -17,7 +17,7 @@ export default function TenantChart({ tenantGrowth, qosUsage }: TenantChartProps
   const [mounted, setMounted] = useState(false);
   const [activeTab, setActiveTab] = useState<'tenant' | 'qos'>('tenant');
 
-  useEffect(() => { setMounted(true); }, []);
+  useEffect(() => { queueMicrotask(() => setMounted(true)); }, []);
 
   if (!mounted) {
     return (

@@ -10,7 +10,7 @@ interface RouterChartProps {
 
 export default function RouterChart({ routerStatus }: RouterChartProps) {
   const [mounted, setMounted] = useState(false);
-  useEffect(() => { setMounted(true); }, []);
+  useEffect(() => { queueMicrotask(() => setMounted(true)); }, []);
 
   if (!mounted) {
     return (

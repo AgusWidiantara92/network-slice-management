@@ -80,7 +80,7 @@ export default function RouterClient() {
     }
   }, [page, limit, search, statusFilter, sortBy, sortOrder]);
 
-  useEffect(() => { fetchRouters(); }, [fetchRouters]);
+  useEffect(() => { queueMicrotask(() => fetchRouters()); }, [fetchRouters]);
 
   const openCreate = () => {
     setEditingRouter(null);

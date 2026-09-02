@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import parser from 'cron-parser';
+import { CronExpressionParser } from 'cron-parser';
 
 export const schedulerSchema = z
   .object({
@@ -14,13 +14,13 @@ export const schedulerSchema = z
     action: z.enum(
       ['DEPLOY_CONFIG', 'UPDATE_CONFIG', 'DELETE_CONFIG', 'ROLLBACK_CONFIG'],
       {
-        errorMap: () => ({ message: 'Aksi yang dipilih tidak valid' }),
+        message: 'Aksi yang dipilih tidak valid',
       }
     ),
     repeatType: z.enum(
       ['ONE_TIME', 'DAILY', 'WEEKLY', 'MONTHLY', 'CUSTOM'],
       {
-        errorMap: () => ({ message: 'Tipe pengulangan tidak valid' }),
+        message: 'Tipe pengulangan tidak valid',
       }
     ),
     executionTime: z
@@ -45,7 +45,7 @@ export const schedulerSchema = z
         (val) => {
           if (!val) return true;
           try {
-            parser.parseExpression(val);
+            CronExpressionParser.parse(val);
             return true;
           } catch {
             return false;

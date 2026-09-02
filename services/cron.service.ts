@@ -1,4 +1,4 @@
-import parser from 'cron-parser';
+import { CronExpressionParser } from 'cron-parser';
 
 export class CronService {
   /**
@@ -6,7 +6,7 @@ export class CronService {
    */
   isValidCron(expression: string): boolean {
     try {
-      parser.parseExpression(expression);
+      CronExpressionParser.parse(expression);
       return true;
     } catch {
       return false;
@@ -63,7 +63,7 @@ export class CronService {
     if (!cronExpr) return null;
 
     try {
-      const interval = parser.parseExpression(cronExpr, {
+      const interval = CronExpressionParser.parse(cronExpr, {
         currentDate: new Date(),
       });
       return interval.next().toDate();

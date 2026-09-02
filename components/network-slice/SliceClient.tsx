@@ -111,11 +111,11 @@ export default function SliceClient() {
   };
 
   useEffect(() => {
-    fetchSlices();
+    queueMicrotask(() => fetchSlices());
   }, [fetchSlices]);
 
   useEffect(() => {
-    fetchDropdowns();
+    queueMicrotask(() => fetchDropdowns());
   }, []);
 
   useEffect(() => {

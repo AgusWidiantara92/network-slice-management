@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -76,7 +76,7 @@ export default function TenantClient() {
     } catch { /* ignore */ } finally { setLoading(false); }
   }, [search, statusFilter, sortBy, sortOrder, page, limit]);
 
-  useEffect(() => { fetchTenants(); }, [fetchTenants]);
+  useEffect(() => { queueMicrotask(() => fetchTenants()); }, [fetchTenants]);
 
   useEffect(() => {
     if (toast) {

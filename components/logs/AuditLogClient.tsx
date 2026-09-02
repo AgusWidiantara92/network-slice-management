@@ -6,9 +6,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import {
   History, Search, Eye, ChevronLeft, ChevronRight, ArrowUpDown,
   Inbox, Loader2, X, RefreshCw, Trash2, Calendar, AlertTriangle,
-  UserPlus, Server, Network, ShieldCheck, Info, FileSpreadsheet, Download
+  UserPlus, Server, Network, ShieldCheck, Info, Download
 } from 'lucide-react';
-import { formatDate } from '@/utils/helpers';
 
 interface AuditLogRow {
   id: string;
@@ -106,11 +105,11 @@ export default function AuditLogClient() {
   }, [search, actionFilter, statusFilter, startDate, endDate, sortBy, sortOrder, page, limit]);
 
   useEffect(() => {
-    fetchLogs();
+    queueMicrotask(() => fetchLogs());
   }, [fetchLogs]);
 
   useEffect(() => {
-    fetchActions();
+    queueMicrotask(() => fetchActions());
   }, []);
 
   // Actions

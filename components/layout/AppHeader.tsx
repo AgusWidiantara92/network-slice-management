@@ -21,11 +21,11 @@ const pageTitles: Record<string, string> = {
   '/tenants': 'Tenant Management',
   '/routers': 'Router Management',
   '/network-slice': 'Network Slice Management',
-  '/schedulers': 'Scheduler Automasi',
+  '/scheduler': 'Scheduler Automasi',
+  '/ai-chat': 'AI Chat Operations',
   '/configuration-template': 'Template Script',
-  '/llm': 'LLM Provider Settings',
+  '/llm-provider': 'LLM Provider Settings',
   '/logs': 'Log Audit System',
-  '/settings': 'System Settings',
 };
 
 export default function AppHeader({ user }: AppHeaderProps) {

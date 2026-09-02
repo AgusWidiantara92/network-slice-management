@@ -14,11 +14,11 @@ export default function AppSidebar() {
     { label: 'Tenants', href: '/tenants' },
     { label: 'Routers', href: '/routers' },
     { label: 'Network Slices', href: '/network-slice' },
-    { label: 'Schedulers', href: '/schedulers' },
-    { label: 'AI Operations', href: '/network-slice?ai=true' },
+    { label: 'Schedulers', href: '/scheduler' },
+    { label: 'AI Operations', href: '/ai-chat' },
     { label: 'Templates', href: '/configuration-template' },
     { label: 'Log Audit', href: '/logs' },
-    { label: 'Settings', href: '/settings' },
+    { label: 'LLM Settings', href: '/llm-provider' },
   ];
 
   const handleLogout = async () => {
@@ -30,7 +30,7 @@ export default function AppSidebar() {
     }
   };
 
-  const SidebarContent = () => (
+  const renderSidebarContent = () => (
     <aside
       className={`flex flex-col h-full bg-card border-r border-border text-foreground transition-all duration-200 select-none ${
         isCollapsed ? 'w-16' : 'w-52'
@@ -102,7 +102,7 @@ export default function AppSidebar() {
     <>
       {/* Desktop Permanent Sidebar */}
       <div className="hidden md:block h-full">
-        <SidebarContent />
+        {renderSidebarContent()}
       </div>
 
       {/* Mobile Drawer Overlay */}
@@ -115,7 +115,7 @@ export default function AppSidebar() {
             className="w-52 h-full shadow-2xl animate-slide-right"
             onClick={(e) => e.stopPropagation()}
           >
-            <SidebarContent />
+            {renderSidebarContent()}
           </div>
         </div>
       )}

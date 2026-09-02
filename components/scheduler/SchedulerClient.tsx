@@ -224,11 +224,11 @@ export default function SchedulerClient() {
     setValue('tenantId', s.tenantId || '');
     setValue('routerId', s.routerId || '');
     setValue('sliceId', s.sliceId || '');
-    setValue('action', s.action as any);
-    setValue('repeatType', s.repeatType as any);
+    setValue('action', s.action as 'DEPLOY_CONFIG' | 'UPDATE_CONFIG' | 'DELETE_CONFIG' | 'ROLLBACK_CONFIG');
+    setValue('repeatType', s.repeatType as 'ONE_TIME' | 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'CUSTOM');
     setValue('executionTime', s.executionTime ? new Date(s.executionTime).toISOString().slice(0, 16) : '');
     setValue('expression', s.expression || '');
-    setValue('status', s.status as any);
+    setValue('status', s.status as 'DRAFT' | 'SCHEDULED' | 'RUNNING' | 'COMPLETED' | 'FAILED' | 'CANCELLED');
     setShowForm(true);
   };
 

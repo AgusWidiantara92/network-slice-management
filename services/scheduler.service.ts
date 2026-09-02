@@ -15,7 +15,7 @@ export class SchedulerService {
     return scheduler;
   }
 
-  async createScheduler(data: any, operatorEmail: string = 'System') {
+  async createScheduler(data: unknown, operatorEmail: string = 'System') {
     // 1. Validate inputs using Zod
     const validated = schedulerSchema.parse(data);
 
@@ -53,7 +53,7 @@ export class SchedulerService {
     return scheduler;
   }
 
-  async updateScheduler(id: string, data: any, operatorEmail: string = 'System') {
+  async updateScheduler(id: string, data: unknown, operatorEmail: string = 'System') {
     const existing = await schedulerRepository.findById(id);
     if (!existing) throw new Error('Scheduler tidak ditemukan.');
 
@@ -78,7 +78,7 @@ export class SchedulerService {
     }
 
     // 3. Prepare prisma updates
-    const updateData: any = {
+    const updateData: Record<string, unknown> = {
       name: validated.name,
       description: validated.description,
       action: validated.action,

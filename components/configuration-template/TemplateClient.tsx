@@ -111,8 +111,8 @@ export default function TemplateClient() {
     } catch { /* ignore */ }
   };
 
-  useEffect(() => { fetchTemplates(); }, [fetchTemplates]);
-  useEffect(() => { fetchApplyDropdowns(); }, []);
+  useEffect(() => { queueMicrotask(() => fetchTemplates()); }, [fetchTemplates]);
+  useEffect(() => { queueMicrotask(() => fetchApplyDropdowns()); }, []);
   useEffect(() => { if (toast) { const t = setTimeout(() => setToast(null), 4000); return () => clearTimeout(t); } }, [toast]);
 
   // ---- Form Handlers ----

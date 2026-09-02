@@ -9,10 +9,11 @@ const routeMap: Record<string, string> = {
   '': 'Dashboard',
   'tenants': 'Data Tenant',
   'routers': 'Router MikroTik',
-  'slices': 'Network Slices',
-  'schedulers': 'Scheduler Automasi',
-  'templates': 'Template Script',
-  'llm': 'LLM Settings',
+  'network-slice': 'Network Slices',
+  'scheduler': 'Scheduler Automasi',
+  'ai-chat': 'AI Chat Operations',
+  'configuration-template': 'Template Script',
+  'llm-provider': 'LLM Settings',
   'logs': 'Log Audit',
 };
 
