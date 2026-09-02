@@ -57,10 +57,18 @@ export default function AIChatClient() {
     setLoading(true);
 
     try {
+      const historyPayload = messages
+        .filter((m) => m.id !== 'welcome')
+        .slice(-10)
+        .map((m) => ({
+          role: m.sender === 'user' ? 'user' : ('assistant' as const),
+          content: m.text,
+        }));
+
       const res = await fetch('/api/llm/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt: inputPrompt }),
+        body: JSON.stringify({ prompt: inputPrompt, history: historyPayload }),
       });
 
       const json = await res.json();
@@ -133,7 +141,7 @@ export default function AIChatClient() {
         return;
       }
 
-      // 2. Create Network Slice
+      // 2. Pre-flight Orchestrator Conflict Check
       const slicePayload = {
         name: `Slice ${cmd.parameters.tenantName}`,
         vlanId: cmd.parameters.vlanId || 100,
@@ -148,6 +156,20 @@ export default function AIChatClient() {
         tenantId,
       };
 
+      const valRes = await fetch('/api/orchestrator/validate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(slicePayload),
+      });
+      const valJson = await valRes.json();
+
+      if (!valJson.data?.valid) {
+        const errorMsgs = valJson.data?.errors?.join('\n• ') || 'Terjadi konflik konfigurasi.';
+        setToast({ type: 'error', message: `Konflik terdeteksi oleh Orchestrator:\n• ${errorMsgs}` });
+        return;
+      }
+
+      // 3. Create Network Slice via Orchestrated API
       const sliceRes = await fetch('/api/network-slice', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -156,7 +178,7 @@ export default function AIChatClient() {
 
       const sliceJson = await sliceRes.json();
       if (sliceJson.success) {
-        setToast({ type: 'success', message: `Network Slice untuk "${cmd.parameters.tenantName}" berhasil dikirim ke Orchestrator & Router!` });
+        setToast({ type: 'success', message: `Network Slice untuk "${cmd.parameters.tenantName}" lolos validasi Orchestrator & berhasil dikirim ke Router!` });
       } else {
         setToast({ type: 'error', message: sliceJson.error || 'Gagal menerapkan slice.' });
       }
@@ -238,8 +260,8 @@ export default function AIChatClient() {
                   <span className="block text-[9px] opacity-60 text-right mt-1">{m.timestamp}</span>
                 </div>
 
-                {/* Parsed JSON Command Card (If AI Response) */}
-                {m.parsedCommand && (
+                {/* Parsed JSON Command Card (Only for Action Commands) */}
+                {m.parsedCommand && m.parsedCommand.intent !== 'QUERY_INFO' && m.parsedCommand.action !== 'NONE' && (
                   <Card className="border border-primary/30 bg-background/90 p-4 rounded-xl space-y-3 shadow-md">
                     <div className="flex items-center justify-between border-b border-border/20 pb-2">
                       <div className="flex items-center gap-2">

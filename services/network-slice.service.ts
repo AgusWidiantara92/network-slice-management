@@ -1,11 +1,21 @@
 import { networkSliceRepository } from '@/repositories/network-slice.repository';
 import type { SliceFilterParams } from '@/repositories/network-slice.repository';
 
-interface CreateSliceData {
-  name: string; routerId: string; tenantId?: string;
-  vlanId?: number; vrfName?: string; subnet?: string; gateway?: string;
-  bandwidthTx: string; bandwidthRx: string; firewallProfile?: string;
-  isolated?: boolean; status?: string;
+import { OrchestratorService } from './orchestrator.service';
+
+export interface CreateSliceData {
+  name: string;
+  routerId: string;
+  tenantId?: string | null;
+  vlanId?: number | null;
+  bandwidthTx: string;
+  bandwidthRx: string;
+  vrfName?: string | null;
+  subnet?: string | null;
+  gateway?: string | null;
+  firewallProfile?: string | null;
+  isolated?: boolean;
+  status?: string;
 }
 
 export class NetworkSliceService {
@@ -20,32 +30,27 @@ export class NetworkSliceService {
   }
 
   async createSlice(data: CreateSliceData) {
-    // Validate VLAN uniqueness on the same router
-    if (data.vlanId !== undefined && data.vlanId !== null) {
-      if (data.vlanId < 1 || data.vlanId > 4094) throw new Error('VLAN ID harus antara 1-4094.');
-      const existingVlan = await networkSliceRepository.findByVlanOnRouter(data.vlanId, data.routerId);
-      if (existingVlan) throw new Error(`VLAN ID ${data.vlanId} sudah digunakan pada router ini.`);
+    // Run Orchestrator Preprocessing & Conflict Detection
+    const orchestration = await OrchestratorService.validateAndOrchestrate(data);
+    if (!orchestration.valid) {
+      throw new Error(orchestration.errors.join(' | '));
     }
 
-    // Validate VRF uniqueness
-    if (data.vrfName) {
-      const existingVrf = await networkSliceRepository.findByVrfName(data.vrfName);
-      if (existingVrf) throw new Error(`VRF Name "${data.vrfName}" sudah digunakan.`);
-    }
+    const sc = orchestration.sanitizedConfig;
 
     return networkSliceRepository.create({
-      name: data.name,
-      vlanId: data.vlanId ?? null,
-      bandwidthTx: data.bandwidthTx,
-      bandwidthRx: data.bandwidthRx,
-      vrfName: data.vrfName || null,
-      subnet: data.subnet || null,
-      gateway: data.gateway || null,
-      firewallProfile: data.firewallProfile || null,
-      isolated: data.isolated ?? true,
-      status: data.status || 'ACTIVE',
-      router: { connect: { id: data.routerId } },
-      tenant: data.tenantId ? { connect: { id: data.tenantId } } : undefined,
+      name: sc.name,
+      vlanId: sc.vlanId ?? null,
+      bandwidthTx: sc.bandwidthTx,
+      bandwidthRx: sc.bandwidthRx,
+      vrfName: sc.vrfName || null,
+      subnet: sc.subnet || null,
+      gateway: sc.gateway || null,
+      firewallProfile: sc.firewallProfile || null,
+      isolated: sc.isolated ?? true,
+      status: sc.status || 'ACTIVE',
+      router: { connect: { id: sc.routerId } },
+      tenant: sc.tenantId ? { connect: { id: sc.tenantId } } : undefined,
     });
   }
 
@@ -53,24 +58,46 @@ export class NetworkSliceService {
     const slice = await networkSliceRepository.findById(id);
     if (!slice) throw new Error('Network Slice tidak ditemukan.');
 
-    const routerId = data.routerId || slice.routerId;
+    const mergedData = {
+      sliceId: id,
+      name: data.name ?? slice.name,
+      routerId: data.routerId ?? slice.routerId,
+      tenantId: data.tenantId !== undefined ? data.tenantId : slice.tenantId,
+      vlanId: data.vlanId !== undefined ? data.vlanId : slice.vlanId,
+      vrfName: data.vrfName !== undefined ? data.vrfName : slice.vrfName,
+      subnet: data.subnet !== undefined ? data.subnet : slice.subnet,
+      gateway: data.gateway !== undefined ? data.gateway : slice.gateway,
+      bandwidthTx: data.bandwidthTx ?? slice.bandwidthTx,
+      bandwidthRx: data.bandwidthRx ?? slice.bandwidthRx,
+      firewallProfile: data.firewallProfile !== undefined ? data.firewallProfile : slice.firewallProfile,
+      isolated: data.isolated !== undefined ? data.isolated : slice.isolated,
+      status: data.status ?? slice.status,
+    };
 
-    if (data.vlanId !== undefined && data.vlanId !== null) {
-      if (data.vlanId < 1 || data.vlanId > 4094) throw new Error('VLAN ID harus antara 1-4094.');
-      const existingVlan = await networkSliceRepository.findByVlanOnRouter(data.vlanId, routerId, id);
-      if (existingVlan) throw new Error(`VLAN ID ${data.vlanId} sudah digunakan pada router ini.`);
+    const orchestration = await OrchestratorService.validateAndOrchestrate(mergedData);
+    if (!orchestration.valid) {
+      throw new Error(orchestration.errors.join(' | '));
     }
 
-    if (data.vrfName && data.vrfName !== slice.vrfName) {
-      const existingVrf = await networkSliceRepository.findByVrfName(data.vrfName, id);
-      if (existingVrf) throw new Error(`VRF Name "${data.vrfName}" sudah digunakan.`);
-    }
+    const sc = orchestration.sanitizedConfig;
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const updateData: Record<string, any> = { ...data };
-    if (data.routerId) { updateData.router = { connect: { id: data.routerId } }; delete updateData.routerId; }
-    if (data.tenantId) { updateData.tenant = { connect: { id: data.tenantId } }; delete updateData.tenantId; }
-    else if (data.tenantId === null) { updateData.tenant = { disconnect: true }; delete updateData.tenantId; }
+    const updateData: Record<string, any> = {
+      name: sc.name,
+      vlanId: sc.vlanId,
+      bandwidthTx: sc.bandwidthTx,
+      bandwidthRx: sc.bandwidthRx,
+      vrfName: sc.vrfName,
+      subnet: sc.subnet,
+      gateway: sc.gateway,
+      firewallProfile: sc.firewallProfile,
+      isolated: sc.isolated,
+      status: sc.status,
+    };
+
+    if (data.routerId) { updateData.router = { connect: { id: data.routerId } }; }
+    if (data.tenantId) { updateData.tenant = { connect: { id: data.tenantId } }; }
+    else if (data.tenantId === null) { updateData.tenant = { disconnect: true }; }
 
     return networkSliceRepository.update(id, updateData);
   }

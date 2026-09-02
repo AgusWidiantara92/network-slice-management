@@ -3,7 +3,7 @@ import { LLMService } from '@/services/llm.service';
 
 export async function POST(req: NextRequest) {
   try {
-    const { prompt } = await req.json();
+    const { prompt, history } = await req.json();
 
     if (!prompt || typeof prompt !== 'string' || !prompt.trim()) {
       return NextResponse.json(
@@ -12,7 +12,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const result = await LLMService.processPrompt(prompt.trim());
+    const result = await LLMService.processPrompt(prompt.trim(), Array.isArray(history) ? history : []);
     return NextResponse.json({ success: true, data: result });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Failed to process prompt with LLM';
